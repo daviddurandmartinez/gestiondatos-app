@@ -1,0 +1,14 @@
+Pillow
+openpyxl
+altair<5
+streamlit
+pandas
+sqlalchemy
+openpyxl
+Pillow 
+pyodbc
+xlsxwriter
+python-dotenv
+python-decouple
+streamlit-option-menu
+streamlit-sidebar-accordion-menu
