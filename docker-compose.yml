@@ -1,0 +1,57 @@
+version: "3.9"
+
+services:
+  gestiondatos-app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        APP_PORT: "8501"
+    image: gestiondatos-app:latest
+    container_name: gestiondatos-app
+
+    # Mapeo de puertos: host:contenedor
+    ports:
+      - "8501:8501"
+
+    # Variables de entorno para la conexión a SQL Server On-Premise
+    # python-decouple lee primero las variables de entorno (prioridad alta)
+    # y luego el archivo .env si existe en el contenedor.
+    # En producción se recomienda inyectar vía secrets o variables de entorno.
+    env_file:
+      - .env
+
+    environment:
+      # Override opcional: si no usas env_file, define aquí las variables:
+      # DRIVER: "ODBC Driver 18 for SQL Server"
+      # SERVER: "172.16.0.137"
+      # USER: "produccion"
+      # PASSWORD: "samcorp$246"
+      # DATABASE_RRHH: "rpa_recursos_humanos"
+      # DATABASE_GESTION: "db_gestion_datos"
+      PYTHONUNBUFFERED: "1"
+
+    # Redirección del SQL Server On-Premise.
+    # Si el servidor SQL está en la misma red que el host (ej: 172.16.0.137),
+    # el contenedor puede alcanzarlo directamente (red bridge por defecto).
+    # Si necesitas resolver hostnames locales, usa extra_hosts.
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+      # Ejemplo: mapear un nombre simbólico a la IP del SQL Server
+      # - "sqlserver:172.16.0.137"
+
+    # --- Modo desarrollo: montar código en caliente ---
+    volumes:
+      # Desarrollo: sobreescribe el código sin reconstruir la imagen
+      - ./src:/app
+      # Excluir __pycache__ del host (no interferir con el contenedor)
+      - /app/__pycache__
+
+    restart: unless-stopped
+
+    # Logging opcional (útil para depurar)
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
